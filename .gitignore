@@ -2,8 +2,6 @@
 __pycache__/
 *.pyc
 .env
-data/*.db
-src/data/*.db
 backups/
 logs/
 debug/raw_arrivals_full.json
