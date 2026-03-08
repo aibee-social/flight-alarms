@@ -1,0 +1,654 @@
+[
+  {
+    "flight": {
+      "identification": {
+        "number": {
+          "default": "LY324",
+          "alternative": "None"
+        },
+        "callsign": "None"
+      },
+      "status": {
+        "live": false,
+        "text": "Scheduled",
+        "estimated": "None",
+        "ambiguous": false,
+        "generic": {
+          "status": {
+            "text": "scheduled",
+            "type": "arrival",
+            "color": "gray",
+            "diverted": "None"
+          },
+          "eventTime": {
+            "utc": "None",
+            "local": "None"
+          }
+        }
+      },
+      "aircraft": {
+        "model": {
+          "code": "777",
+          "text": ""
+        },
+        "registration": "",
+        "serialNo": "",
+        "images": "None"
+      },
+      "owner": "None",
+      "airline": {
+        "name": "El Al",
+        "code": {
+          "iata": "LY",
+          "icao": "ELY"
+        },
+        "short": "El Al"
+      },
+      "airport": {
+        "origin": {
+          "code": {
+            "iata": "CDG",
+            "icao": "LFPG"
+          },
+          "timezone": {
+            "name": "Europe/Paris",
+            "offset": 3600,
+            "abbr": "CET",
+            "abbrName": "Central European Time",
+            "isDst": false
+          },
+          "info": {
+            "terminal": "2B",
+            "baggage": "None",
+            "gate": "None"
+          },
+          "name": "Paris Charles de Gaulle Airport",
+          "position": {
+            "latitude": 49.012516,
+            "longitude": 2.555752,
+            "country": {
+              "name": "France",
+              "code": "FR"
+            },
+            "region": {
+              "city": "Paris"
+            }
+          },
+          "visible": true
+        },
+        "destination": {
+          "timezone": {
+            "name": "Asia/Jerusalem",
+            "offset": 7200,
+            "abbr": "IST",
+            "abbrName": "Israel Standard Time",
+            "isDst": false
+          },
+          "info": {
+            "terminal": "3",
+            "baggage": "None",
+            "gate": "None"
+          }
+        },
+        "real": "None"
+      },
+      "time": {
+        "scheduled": {
+          "departure_millis": 1772977500000,
+          "departure_date": "20260308",
+          "departure_time": "1545",
+          "departure": 1772977500,
+          "arrival_millis": 1772992800000,
+          "arrival_date": "20260308",
+          "arrival_time": "2000",
+          "arrival": 1772992800
+        },
+        "real": {
+          "departure": "None",
+          "arrival": "None"
+        },
+        "estimated": {
+          "departure": "None",
+          "arrival": "None"
+        },
+        "other": {
+          "eta": "None",
+          "duration": "None"
+        }
+      }
+    }
+  },
+  {
+    "flight": {
+      "identification": {
+        "number": {
+          "default": "LY1014",
+          "alternative": "None"
+        },
+        "callsign": "ELY1014",
+        "codeshare": "None"
+      },
+      "status": {
+        "live": true,
+        "text": "Estimated 20:16",
+        "estimated": "None",
+        "ambiguous": false,
+        "generic": {
+          "status": {
+            "text": "estimated",
+            "type": "arrival",
+            "color": "green",
+            "diverted": "None"
+          },
+          "eventTime": {
+            "utc_millis": 1772993792000,
+            "utc_date": "20260308",
+            "utc_time": "2016",
+            "utc": 1772993792,
+            "local_millis": 1773000992000,
+            "local_date": "20260308",
+            "local_time": "2216",
+            "local": 1773000992
+          }
+        }
+      },
+      "aircraft": {
+        "model": {
+          "code": "B789",
+          "text": "Boeing 787-9 Dreamliner"
+        },
+        "registration": "4X-EDD",
+        "country": {
+          "name": "Israel",
+          "alpha2": "IL",
+          "alpha3": "ISR"
+        },
+        "restricted": false,
+        "serialNo": "None",
+        "age": {
+          "availability": true
+        },
+        "availability": {
+          "serialNo": true,
+          "age": true
+        }
+      },
+      "owner": {
+        "name": "El Al",
+        "code": {
+          "iata": "LY",
+          "icao": "ELY"
+        }
+      },
+      "airline": {
+        "name": "El Al",
+        "code": {
+          "iata": "LY",
+          "icao": "ELY"
+        },
+        "short": "El Al"
+      },
+      "airport": {
+        "origin": {
+          "code": {
+            "iata": "JFK",
+            "icao": "KJFK"
+          },
+          "timezone": {
+            "name": "America/New_York",
+            "offset": -14400,
+            "abbr": "EDT",
+            "abbrName": "Eastern Daylight Time",
+            "isDst": true
+          },
+          "info": {
+            "terminal": "None",
+            "baggage": "None",
+            "gate": "None"
+          },
+          "name": "New York John F. Kennedy International Airport",
+          "position": {
+            "latitude": 40.639751,
+            "longitude": -73.7789,
+            "country": {
+              "name": "United States",
+              "code": "US"
+            },
+            "region": {
+              "city": "New York"
+            }
+          },
+          "visible": true
+        },
+        "destination": {
+          "timezone": {
+            "name": "Asia/Jerusalem",
+            "offset": 7200,
+            "abbr": "IST",
+            "abbrName": "Israel Standard Time",
+            "isDst": false
+          },
+          "info": {
+            "terminal": "None",
+            "baggage": "None",
+            "gate": "None"
+          }
+        },
+        "real": "None"
+      },
+      "time": {
+        "scheduled": {
+          "departure_millis": 1772957400000,
+          "departure_date": "20260308",
+          "departure_time": "1010",
+          "departure": 1772957400,
+          "arrival_millis": 1772993062000,
+          "arrival_date": "20260308",
+          "arrival_time": "2004",
+          "arrival": 1772993062
+        },
+        "real": {
+          "departure_millis": 1772959057000,
+          "departure_date": "20260308",
+          "departure_time": "1037",
+          "departure": 1772959057,
+          "arrival": "None"
+        },
+        "estimated": {
+          "departure": "None",
+          "arrival_millis": 1772993792000,
+          "arrival_date": "20260308",
+          "arrival_time": "2016",
+          "arrival": 1772993792
+        },
+        "other": {
+          "eta_millis": 1772993792000,
+          "eta_date": "20260308",
+          "eta_time": "2016",
+          "eta": 1772993792,
+          "duration": "None"
+        }
+      }
+    }
+  },
+  {
+    "flight": {
+      "identification": {
+        "number": {
+          "default": "5C606",
+          "alternative": "X6606"
+        },
+        "callsign": "ICL606",
+        "codeshare": "None"
+      },
+      "status": {
+        "live": false,
+        "text": "Scheduled",
+        "estimated": "None",
+        "ambiguous": false,
+        "generic": {
+          "status": {
+            "text": "scheduled",
+            "type": "arrival",
+            "color": "gray",
+            "diverted": "None"
+          },
+          "eventTime": {
+            "utc": "None",
+            "local": "None"
+          }
+        }
+      },
+      "aircraft": {
+        "model": {
+          "code": "B763",
+          "text": "Boeing 767-333(ER)(BDSF)"
+        },
+        "registration": "9H-CAC",
+        "country": {
+          "name": "Malta",
+          "alpha2": "MT",
+          "alpha3": "MLT"
+        },
+        "restricted": false,
+        "serialNo": "None",
+        "age": {
+          "availability": true
+        },
+        "availability": {
+          "serialNo": true,
+          "age": true
+        }
+      },
+      "owner": {
+        "name": "Challenge Air Cargo",
+        "code": {
+          "iata": "X6",
+          "icao": "CHZ"
+        }
+      },
+      "airline": {
+        "name": "Challenge Airlines",
+        "code": {
+          "iata": "X7",
+          "icao": "CHG"
+        },
+        "short": "Challenge Airlines BE"
+      },
+      "airport": {
+        "origin": {
+          "code": {
+            "iata": "LCA",
+            "icao": "LCLK"
+          },
+          "timezone": {
+            "name": "Asia/Nicosia",
+            "offset": 7200,
+            "abbr": "EET",
+            "abbrName": "Eastern European Time",
+            "isDst": false
+          },
+          "info": {
+            "terminal": "None",
+            "baggage": "None",
+            "gate": "None"
+          },
+          "name": "Larnaca International Airport",
+          "position": {
+            "latitude": 34.875111,
+            "longitude": 33.624851,
+            "country": {
+              "name": "Cyprus",
+              "code": "CY"
+            },
+            "region": {
+              "city": "Larnaca"
+            }
+          },
+          "visible": true
+        },
+        "destination": {
+          "timezone": {
+            "name": "Asia/Jerusalem",
+            "offset": 7200,
+            "abbr": "IST",
+            "abbrName": "Israel Standard Time",
+            "isDst": false
+          },
+          "info": {
+            "terminal": "None",
+            "baggage": "None",
+            "gate": "None"
+          }
+        },
+        "real": "None"
+      },
+      "time": {
+        "scheduled": {
+          "departure_millis": 1772989200000,
+          "departure_date": "20260308",
+          "departure_time": "1900",
+          "departure": 1772989200,
+          "arrival_millis": 1772993340000,
+          "arrival_date": "20260308",
+          "arrival_time": "2009",
+          "arrival": 1772993340
+        },
+        "real": {
+          "departure": "None",
+          "arrival": "None"
+        },
+        "estimated": {
+          "departure_millis": 1772996220000,
+          "departure_date": "20260308",
+          "departure_time": "2057",
+          "departure": 1772996220,
+          "arrival": "None"
+        },
+        "other": {
+          "eta": "None",
+          "duration": "None"
+        }
+      }
+    }
+  },
+  {
+    "flight": {
+      "identification": {
+        "number": {
+          "default": "IZ224",
+          "alternative": "None"
+        },
+        "callsign": "None",
+        "codeshare": "None"
+      },
+      "status": {
+        "live": false,
+        "text": "Scheduled",
+        "estimated": "None",
+        "ambiguous": false,
+        "generic": {
+          "status": {
+            "text": "scheduled",
+            "type": "arrival",
+            "color": "gray",
+            "diverted": "None"
+          },
+          "eventTime": {
+            "utc": "None",
+            "local": "None"
+          }
+        }
+      },
+      "aircraft": {
+        "model": {
+          "code": "E95",
+          "text": ""
+        },
+        "registration": "",
+        "serialNo": "",
+        "images": "None"
+      },
+      "owner": "None",
+      "airline": {
+        "name": "arkia",
+        "code": {
+          "iata": "IZ",
+          "icao": "AIZ"
+        },
+        "short": "arkia"
+      },
+      "airport": {
+        "origin": {
+          "code": {
+            "iata": "SKG",
+            "icao": "LGTS"
+          },
+          "timezone": {
+            "name": "Europe/Athens",
+            "offset": 7200,
+            "abbr": "EET",
+            "abbrName": "Eastern European Time",
+            "isDst": false
+          },
+          "info": {
+            "terminal": "None",
+            "baggage": "None",
+            "gate": "None"
+          },
+          "name": "Thessaloniki International Airport",
+          "position": {
+            "latitude": 40.519718,
+            "longitude": 22.970949,
+            "country": {
+              "name": "Greece",
+              "code": "GR"
+            },
+            "region": {
+              "city": "Thessaloniki"
+            }
+          },
+          "visible": true
+        },
+        "destination": {
+          "timezone": {
+            "name": "Asia/Jerusalem",
+            "offset": 7200,
+            "abbr": "IST",
+            "abbrName": "Israel Standard Time",
+            "isDst": false
+          },
+          "info": {
+            "terminal": "3",
+            "baggage": "None",
+            "gate": "None"
+          }
+        },
+        "real": "None"
+      },
+      "time": {
+        "scheduled": {
+          "departure_millis": 1772984700000,
+          "departure_date": "20260308",
+          "departure_time": "1745",
+          "departure": 1772984700,
+          "arrival_millis": 1772993400000,
+          "arrival_date": "20260308",
+          "arrival_time": "2010",
+          "arrival": 1772993400
+        },
+        "real": {
+          "departure": "None",
+          "arrival": "None"
+        },
+        "estimated": {
+          "departure": "None",
+          "arrival": "None"
+        },
+        "other": {
+          "eta": "None",
+          "duration": "None"
+        }
+      }
+    }
+  },
+  {
+    "flight": {
+      "identification": {
+        "number": {
+          "default": "ET414",
+          "alternative": "None"
+        },
+        "callsign": "None"
+      },
+      "status": {
+        "live": false,
+        "text": "Scheduled",
+        "estimated": "None",
+        "ambiguous": false,
+        "generic": {
+          "status": {
+            "text": "scheduled",
+            "type": "arrival",
+            "color": "gray",
+            "diverted": "None"
+          },
+          "eventTime": {
+            "utc": "None",
+            "local": "None"
+          }
+        }
+      },
+      "aircraft": {
+        "model": {
+          "code": "7M8",
+          "text": ""
+        },
+        "registration": "",
+        "serialNo": "",
+        "images": "None"
+      },
+      "owner": "None",
+      "airline": {
+        "name": "Ethiopian Airlines",
+        "code": {
+          "iata": "ET",
+          "icao": "ETH"
+        },
+        "short": "Ethiopian Airlines"
+      },
+      "airport": {
+        "origin": {
+          "code": {
+            "iata": "ADD",
+            "icao": "HAAB"
+          },
+          "timezone": {
+            "name": "Africa/Addis_Ababa",
+            "offset": 10800,
+            "abbr": "EAT",
+            "abbrName": "East Africa Time",
+            "isDst": false
+          },
+          "info": {
+            "terminal": "2",
+            "baggage": "None",
+            "gate": "None"
+          },
+          "name": "Addis Ababa Bole Airport",
+          "position": {
+            "latitude": 8.977889,
+            "longitude": 38.799309,
+            "country": {
+              "name": "Ethiopia",
+              "code": "ET"
+            },
+            "region": {
+              "city": "Addis Ababa"
+            }
+          },
+          "visible": true
+        },
+        "destination": {
+          "timezone": {
+            "name": "Asia/Jerusalem",
+            "offset": 7200,
+            "abbr": "IST",
+            "abbrName": "Israel Standard Time",
+            "isDst": false
+          },
+          "info": {
+            "terminal": "3",
+            "baggage": "None",
+            "gate": "None"
+          }
+        },
+        "real": "None"
+      },
+      "time": {
+        "scheduled": {
+          "departure_millis": 1772978700000,
+          "departure_date": "20260308",
+          "departure_time": "1605",
+          "departure": 1772978700,
+          "arrival_millis": 1772993400000,
+          "arrival_date": "20260308",
+          "arrival_time": "2010",
+          "arrival": 1772993400
+        },
+        "real": {
+          "departure": "None",
+          "arrival": "None"
+        },
+        "estimated": {
+          "departure": "None",
+          "arrival": "None"
+        },
+        "other": {
+          "eta": "None",
+          "duration": "None"
+        }
+      }
+    }
+  }
+]

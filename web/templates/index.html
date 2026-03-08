@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>תחזית הסתברות לשיגורים</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #03112f 0%, #071a45 100%);
+      color: #f8fafc;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-size: 56px;
+      margin: 0 0 18px;
+      font-weight: 800;
+    }
+    .hero p {
+      font-size: 18px;
+      color: #dbe4f0;
+      margin: 8px 0;
+      line-height: 1.7;
+    }
+    .updated {
+      color: #93c5fd;
+      font-size: 17px;
+      margin-top: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 28px;
+    }
+    .card {
+      background: rgba(9, 22, 52, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 0 40px rgba(15, 23, 42, 0.22);
+    }
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      font-weight: 800;
+      text-align: center;
+    }
+    .card p.sub {
+      margin: 0 0 20px;
+      color: #d1d5db;
+      text-align: center;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .current-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 0 0;
+    }
+    .gauge-wrap {
+      width: 290px;
+      text-align: center;
+    }
+    .gauge-label {
+      font-size: 18px;
+      margin-top: 18px;
+      font-weight: 700;
+    }
+    .small {
+      color: #cbd5e1;
+      font-size: 15px;
+      margin-top: 10px;
+      line-height: 1.7;
+      text-align: center;
+    }
+    .legend {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      font-size: 15px;
+    }
+    .dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .green { background: #22c55e; }
+    .orange { background: #f59e0b; }
+    .red { background: #ef4444; }
+
+    .window-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .window-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 22px;
+      padding: 18px 18px;
+    }
+    .window-main {
+      flex: 1;
+    }
+    .window-time {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .window-meta {
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+    .pill {
+      min-width: 96px;
+      text-align: center;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 800;
+      font-size: 18px;
+      color: white;
+    }
+    .pill.green { background: #22c55e; }
+    .pill.orange { background: #f59e0b; }
+    .pill.red { background: #ef4444; }
+
+    .full-card {
+      margin-top: 24px;
+    }
+    .chart-wrap {
+      background: rgba(255,255,255,0.02);
+      border-radius: 22px;
+      padding: 18px;
+      margin-top: 16px;
+    }
+    canvas {
+      max-width: 100%;
+    }
+
+    .info-box {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .info-box .card h3 {
+      margin-top: 0;
+      font-size: 22px;
+    }
+    .info-box .card ul {
+      margin: 0;
+      padding-right: 20px;
+      line-height: 1.9;
+      color: #dbe4f0;
+    }
+
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      color: #cbd5e1;
+      line-height: 1.9;
+      font-size: 15px;
+    }
+    .footer strong {
+      color: #ffffff;
+    }
+    .footer a {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    .disclaimer {
+      margin-top: 18px;
+      color: #f8d7da;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .hero h1 {
+        font-size: 38px;
+      }
+      .grid,
+      .info-box {
+        grid-template-columns: 1fr;
+      }
+      .window-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .pill {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>תחזית הסתברות לשיגורים</h1>
+      <p style="color:#fbbf24;font-size:15px;">גרסה ניסיונית (Beta)</p>
+      <p>הערכה דינמית ניסיונית המבוססת על ריכוז טיסות נכנסות, זמני נחיתה צפויים ועדכונים בזמן אמת.</p>
+      <p>הדף מתמקד בהערכת חלונות זמן רלוונטיים לשיגורים מאיראן למרכז הארץ, על בסיס דפוסי צפיפות של נחיתות נכנסות.</p>
+      <div class="updated" id="updatedAt">עדכון אחרון: --</div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>מצב נוכחי</h2>
+        <p class="sub">סיכוי משוער לפי הקלאסטר החזק ביותר ב־45 הדקות הקרובות, על בסיס חלונות של 12 דקות.</p>
+        <div class="current-wrap">
+          <div class="gauge-wrap">
+            <canvas id="gaugeChart"></canvas>
+            <div class="gauge-label" id="currentLabel">מחשב מצב...</div>
+            <div class="small" id="currentQuality"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>חלונות הזמן הקרובים עם הסבירות הגבוהה ביותר</h2>
+        <p class="sub">אלו חלונות הזמן הקרובים שבהם זוהה ריכוז צפוף יחסית של טיסות נכנסות, עם משקל גבוה יותר לטיסות מעודכנות בזמן אמת.</p>
+        <div class="window-list" id="topWindows"></div>
+      </div>
+    </section>
+
+    <section class="card full-card">
+      <h2>תחזית ל־24 השעות הקרובות</h2>
+      <p class="sub">גרף לפי שעה. ככל שהעמודה גבוהה ואדומה יותר — כך ההסתברות המשוערת גבוהה יותר.</p>
+      <div class="small">הגרף מציג את ההסתברות הגבוהה ביותר בכל שעה על בסיס חלונות זמן של 12 דקות.</div>
+      <div class="chart-wrap">
+        <canvas id="dailyChart" height="120"></canvas>
+      </div>
+    </section>
+
+    <section class="info-box">
+      <div class="card">
+        <h3>איך מחושבת ההסתברות?</h3>
+        <ul>
+          <li>המערכת מנתחת ריכוז טיסות נכנסות בפרקי זמן קצרים.</li>
+          <li>נלקחים בחשבון זמני נחיתה משוערים, ETA, ועדכוני סטטוס.</li>
+          <li>אשכול צפוף יותר בחלון של 10–15 דקות מעלה את ההסתברות.</li>
+          <li>לטיסות עם מידע מעודכן יש משקל גבוה יותר מטיסות חלשות או לא מאומתות.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>על AIBee</h3>
+        <p class="sub" style="text-align:right;">
+          AIBee מפתחת פתרונות חכמים מבוססי AI, אוטומציה וניתוח מידע לעסקים ולמערכות מורכבות.
+          הדף הזה הוא דוגמה לפיתוח מהיר של מוצר ניסיוני בזמן אמת — משלב איסוף נתונים, ניתוח והצגה ויזואלית.
+        </p>
+        <p class="sub" style="text-align:right;">
+          אתר: <a href="https://aibee.co.il" target="_blank">aibee.co.il</a><br>
+          אינסטגרם: <a href="https://www.instagram.com/stav.ai?igsh=anpkdm1hZTM3bzJv&utm_source=qr" target="_blank">@stav.ai</a><br>
+          לינקדאין: <a href="https://www.linkedin.com/in/stav-vaknin-8242a5140/" target="_blank">Stav Vaknin</a>
+        </p>
+      </div>
+    </section>
+
+    <section class="footer">
+      <div><strong>הבהרה:</strong> המערכת מציגה הערכת הסתברות ניסיונית בלבד ואינה מערכת התרעה רשמית.</div>
+      <div>יש להסתמך תמיד על פיקוד העורף, התרעות רשמיות והנחיות גורמי הביטחון.</div>
+      <div class="disclaimer">© 2026 AIBee | ניסוי מבוסס ניתוח נתוני טיסות בזמן אמת</div>
+    </section>
+  </div>
+
+  <script>
+    let gaugeChart;
+    let dailyChart;
+
+    function colorClass(prob) {
+      if (prob < 30) return "green";
+      if (prob < 60) return "orange";
+      return "red";
+    }
+
+    function gaugeColor(prob) {
+      if (prob < 30) return "#22c55e";
+      if (prob < 60) return "#f59e0b";
+      return "#ef4444";
+    }
+
+    async function loadDashboard() {
+      const res = await fetch("/api/dashboard");
+      const data = await res.json();
+
+      document.getElementById("updatedAt").innerText = `עדכון אחרון: ${data.updated}`;
+
+      const current = data.current;
+      document.getElementById("currentLabel").innerText = `רמת סיכון: ${current.label}`;
+      document.getElementById("currentQuality").innerText =
+        `איכות נתונים: ${current.quality} | טיסות עם מידע מעודכן בחלון: ${current.strong_count}`;
+
+      const gaugeData = {
+        datasets: [{
+          data: [current.probability, 100 - current.probability],
+          backgroundColor: [gaugeColor(current.probability), "#22314d"],
+          borderWidth: 0
+        }]
+      };
+
+      if (gaugeChart) gaugeChart.destroy();
+      gaugeChart = new Chart(document.getElementById("gaugeChart"), {
+        type: "doughnut",
+        data: gaugeData,
+        options: {
+          responsive: true,
+          cutout: "76%",
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          }
+        },
+        plugins: [{
+          id: "centerText",
+          beforeDraw(chart) {
+            const { ctx } = chart;
+            const meta = chart.getDatasetMeta(0).data[0];
+            if (!meta) return;
+            const x = meta.x;
+            const y = meta.y;
+            ctx.save();
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 54px Arial";
+            ctx.fillText(`${current.probability}%`, x, y - 4);
+            ctx.font = "24px Arial";
+            ctx.fillStyle = "#d1d5db";
+            ctx.fillText("45 הדקות הקרובות", x, y + 36);
+            ctx.restore();
+          }
+        }]
+      });
+
+      const container = document.getElementById("topWindows");
+      container.innerHTML = "";
+      const topWindows = data.top_windows;
+
+      if (!topWindows || topWindows.length === 0) {
+        const row = document.createElement("div");
+        row.className = "window-item";
+        row.innerHTML = `
+          <div class="window-main">
+            <div class="window-time">כרגע לא זוהו חלונות חזקים במיוחד</div>
+            <div class="window-meta">לא נמצאו חלונות בולטים בשעות הקרובות על בסיס הנתונים הזמינים</div>
+          </div>
+        `;
+        container.appendChild(row);
+      } else {
+        topWindows.forEach(w => {
+          row = document.createElement("div");
+          row.className = "window-item";
+          row.innerHTML = `
+            <div class="pill ${colorClass(w.probability)}">${w.probability}%</div>
+            <div class="window-main">
+              <div class="window-time">${w.label}</div>
+              <div class="window-meta">טיסות בחלון: ${w.flights} | טיסות צפופות בחלון 10 דק: ${w.best10}${w.gap10 ? " | פער מינימלי: " + w.gap10 + " דק" : ""}</div>
+            </div>
+          `;
+          container.appendChild(row);
+        });
+      }
+
+      const dailyLabels = data.daily.map(x => x.hour);
+      const dailyValues = data.daily.map(x => x.probability);
+      const dailyColors = data.daily.map(x => gaugeColor(x.probability));
+
+      if (dailyChart) dailyChart.destroy();
+      dailyChart = new Chart(document.getElementById("dailyChart"), {
+        type: "bar",
+        data: {
+          labels: dailyLabels,
+          datasets: [{
+            label: "סיכוי משוער (%)",
+            data: dailyValues,
+            backgroundColor: dailyColors,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "#e5e7eb" } }
+          },
+          scales: {
+            x: {
+              ticks: { color: "#e5e7eb" },
+              grid: { color: "rgba(255,255,255,0.08)" }
+            },
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: { color: "#e5e7eb" },
+              grid: { color: "rgba(255,255,255,0.08)" }
+            }
+          }
+        }
+      });
+    }
+
+    loadDashboard();
+    setInterval(loadDashboard, 60000);
+  </script>
+</body>
+</html>
