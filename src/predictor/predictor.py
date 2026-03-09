@@ -86,78 +86,110 @@ def flight_confidence(row):
     return max(0.0, min(1.35, score))
 
 def load_flights():
-    import sqlite3
-    from pathlib import Path
-    import pandas as pd
+    conn = sqlite3.connect(DB)
 
-    candidates = [
-        Path("data/flights.db"),
-        Path("src/data/flights.db"),
-    ]
+    df = pd.read_sql("""
+        SELECT
+            fc.flight_number,
+            fc.callsign,
+            fc.registration,
+            fc.airline,
+            fc.origin_airport,
+            fc.origin_city,
+            fc.scheduled_arrival_utc,
+            fc.scheduled_arrival_israel,
+            fc.estimated_arrival_utc,
+            fc.estimated_arrival_israel,
+            fc.real_arrival_utc,
+            fc.real_arrival_israel,
+            fc.eta_utc,
+            fc.eta_israel,
+            fc.status,
+            fc.last_collected_utc,
+            COALESCE(u.cnt_updates, 0) AS cnt_updates,
+            COALESCE(s.cnt_snapshots, 0) AS cnt_snapshots
+        FROM flights_current fc
+        LEFT JOIN (
+            SELECT flight_number, COUNT(*) AS cnt_updates
+            FROM flight_updates
+            GROUP BY flight_number
+        ) u
+        ON fc.flight_number = u.flight_number
+        LEFT JOIN (
+            SELECT flight_number, COUNT(*) AS cnt_snapshots
+            FROM flight_snapshots
+            GROUP BY flight_number
+        ) s
+        ON fc.flight_number = s.flight_number
+    """, conn)
 
-    db_path = None
-    for candidate in candidates:
-        if candidate.exists():
-            db_path = candidate
-            break
-
-    if db_path is None:
-        return pd.DataFrame(columns=[
-            "flight_number", "airline", "origin_airport", "origin_city", "status",
-            "callsign", "registration",
-            "scheduled_arrival_utc", "scheduled_arrival_israel",
-            "estimated_arrival_utc", "estimated_arrival_israel",
-            "eta_utc", "eta_israel",
-            "real_arrival_utc", "real_arrival_israel",
-            "effective_arrival_utc", "effective_arrival_israel",
-            "confidence"
-        ])
-
-    conn = sqlite3.connect(str(db_path))
-
-    query = """
-    SELECT
-        flight_number,
-        airline,
-        origin_airport,
-        origin_city,
-        status,
-        callsign,
-        registration,
-        scheduled_arrival_utc,
-        scheduled_arrival_israel,
-        estimated_arrival_utc,
-        estimated_arrival_israel,
-        eta_utc,
-        eta_israel,
-        real_arrival_utc,
-        real_arrival_israel
-    FROM flights_current
-    WHERE COALESCE(eta_utc, estimated_arrival_utc, scheduled_arrival_utc) IS NOT NULL
-    """
-
-    try:
-        df = pd.read_sql_query(query, conn)
-    finally:
-        conn.close()
+    conn.close()
 
     if df.empty:
-        df["effective_arrival_utc"] = []
-        df["effective_arrival_israel"] = []
-        df["confidence"] = []
+        df["effective_arrival_utc"] = pd.Series(dtype="float64")
+        df["effective_arrival_israel"] = pd.Series(dtype="object")
+        df["confidence"] = pd.Series(dtype="float64")
         return df
 
-    df["effective_arrival_utc"] = df[
-        ["eta_utc", "estimated_arrival_utc", "scheduled_arrival_utc"]
-    ].bfill(axis=1).iloc[:, 0]
+    israel_tz = "Asia/Jerusalem"
 
-    df["effective_arrival_israel"] = df[
-        ["eta_israel", "estimated_arrival_israel", "scheduled_arrival_israel"]
-    ].bfill(axis=1).iloc[:, 0]
+    # אם אין UTC, נבנה אותו מהזמן בישראל
+    for local_col, utc_col in [
+        ("scheduled_arrival_israel", "scheduled_arrival_utc"),
+        ("estimated_arrival_israel", "estimated_arrival_utc"),
+        ("eta_israel", "eta_utc"),
+    ]:
+        if local_col in df.columns and utc_col in df.columns:
+            mask = df[utc_col].isna() & df[local_col].notna()
+            if mask.any():
+                local_dt = pd.to_datetime(df.loc[mask, local_col], errors="coerce")
+                local_dt = local_dt.dt.tz_localize(
+                    israel_tz,
+                    nonexistent="shift_forward",
+                    ambiguous="NaT"
+                )
+                df.loc[mask, utc_col] = (
+                    local_dt.dt.tz_convert("UTC").astype("int64") // 10**9
+                )
+
+    df["effective_arrival_utc"] = (
+        df["eta_utc"]
+        .fillna(df["estimated_arrival_utc"])
+        .fillna(df["scheduled_arrival_utc"])
+    )
+
+    df["effective_arrival_israel"] = (
+        df["eta_israel"]
+        .fillna(df["estimated_arrival_israel"])
+        .fillna(df["scheduled_arrival_israel"])
+    )
+
+    df = df[df["effective_arrival_utc"].notna()].copy()
+
+    now_ts = int(datetime.now(ISRAEL).timestamp())
+    df["minutes_ahead"] = (df["effective_arrival_utc"] - now_ts) / 60.0
+
+    df = df[
+        (df["effective_arrival_utc"] >= now_ts - 10 * 60) &
+        (df["effective_arrival_utc"] <= now_ts + 24 * 3600)
+    ].copy()
+
+    df = df[~df["status"].fillna("").str.lower().isin(["unknown"])].copy()
+
+    bucket5 = ((df["effective_arrival_utc"] // 300) * 300).astype("Int64").astype(str)
+    fallback_key = df["origin_city"].fillna("UNK") + "_" + bucket5 + "_" + df["status"].fillna("UNK")
+
+    df["dedupe_key"] = (
+        df["registration"]
+        .replace("", pd.NA)
+        .fillna(df["callsign"].replace("", pd.NA))
+        .fillna(fallback_key)
+        .fillna(df["flight_number"])
+    )
+
+    df = df.sort_values("last_collected_utc", ascending=False).drop_duplicates(subset=["dedupe_key"])
 
     def _extract_confidence(value):
-        import pandas as pd
-
         if isinstance(value, pd.Series):
             if "confidence" in value.index:
                 try:
@@ -197,10 +229,31 @@ def load_flights():
         except Exception:
             return 0.0
 
-    df["confidence"] = df.apply(
-        lambda row: _extract_confidence(flight_confidence(row)),
-        axis=1
+    df["confidence"] = df.apply(lambda row: _extract_confidence(flight_confidence(row)), axis=1)
+
+    type_info = df.apply(lambda r: airline_weight(r.get("airline"), r.get("flight_number")), axis=1)
+    df["flight_type"] = [x[1] for x in type_info]
+
+    strong_live = (
+        (df["status"].isin(["estimated", "delayed"])) |
+        (df["eta_utc"].notna()) |
+        (df["estimated_arrival_utc"].notna()) |
+        (df["real_arrival_utc"].notna()) |
+        (df["callsign"].notna() & (df["callsign"] != "")) |
+        (df["registration"].notna() & (df["registration"] != "")) |
+        (df["cnt_updates"] > 0)
     )
+
+    local_scheduled = (
+        (df["status"] == "scheduled") &
+        (df["airline"].fillna("").str.upper().isin(PASSENGER_AIRLINES)) &
+        (df["minutes_ahead"] <= 180)
+    )
+
+    df = df[strong_live | local_scheduled].copy()
+    df = df[~((df["flight_type"] == "cargo") & ~(strong_live))].copy()
+    df = df[~((df["flight_type"] == "charter") & ~(strong_live))].copy()
+    df = df[df["confidence"] >= 0.22].copy()
 
     return df.sort_values("effective_arrival_utc").reset_index(drop=True)
 
