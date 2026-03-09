@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from src.predictor.predictor import compute_dashboard
 
 app = FastAPI()

@@ -149,7 +149,14 @@ def load_flights():
     )
 
     df = df.sort_values("last_collected_utc", ascending=False).drop_duplicates(subset=["dedupe_key"])
-    df["confidence"] = df.apply(flight_confidence, axis=1)
+    confidence_values = df.apply(flight_confidence, axis=1)
+if hasattr(confidence_values, "columns"):
+    if "confidence" in confidence_values.columns:
+        df["confidence"] = confidence_values["confidence"]
+    else:
+        df["confidence"] = confidence_values.iloc[:, 0]
+else:
+    df["confidence"] = confidence_values
 
     type_info = df.apply(lambda r: airline_weight(r.get("airline"), r.get("flight_number")), axis=1)
     df["flight_type"] = [x[1] for x in type_info]
