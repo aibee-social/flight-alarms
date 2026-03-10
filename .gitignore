@@ -1,9 +1,11 @@
 .venv/
 __pycache__/
 *.pyc
-.env
-backups/
+*.pyo
+.DS_Store
 logs/
-debug/raw_arrivals_full.json
-debug/raw_arrivals_watch.json
-compare_flights.csv
+db_backups/
+backups/
+*.bak_*
+*.db-journal
+data/flights.db
