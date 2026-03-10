@@ -50,8 +50,19 @@ def main():
         scheduled_date,
         '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || scheduled_time || ':00' AS scheduled_departure_israel,
         CASE
-          WHEN updated_time IS NOT NULL AND TRIM(updated_time) != ''
-          THEN '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || updated_time || ':00'
+          WHEN updated_time IS NOT NULL AND TRIM(updated_time) != '' THEN
+            CASE
+              WHEN (
+                CAST(substr(updated_time,1,2) AS INTEGER) * 60 + CAST(substr(updated_time,4,2) AS INTEGER)
+              ) < (
+                CAST(substr(scheduled_time,1,2) AS INTEGER) * 60 + CAST(substr(scheduled_time,4,2) AS INTEGER)
+              ) - 360
+              THEN datetime(
+                '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || updated_time || ':00',
+                '+1 day'
+              )
+              ELSE '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || updated_time || ':00'
+            END
           ELSE NULL
         END AS estimated_departure_israel,
         gate_info,
