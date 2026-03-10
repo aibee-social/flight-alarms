@@ -1,6 +1,7 @@
 import sqlite3
 import pandas as pd
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import pytz
 
 DB = "data/flights.db"
@@ -341,7 +342,7 @@ def _traffic_probability(traffic: int, updated_count: int, avg_weight: float, ma
 def compute_dashboard_combined():
     df = load_all_traffic()
 
-    now = datetime.now()
+    now = datetime.now(ZoneInfo("Asia/Jerusalem")).replace(tzinfo=None)
     updated = now.strftime("%Y-%m-%d %H:%M:%S")
 
     if df.empty:
@@ -396,7 +397,7 @@ def compute_dashboard_combined():
     )
     clusters["color"] = clusters["probability"].apply(_color_from_probability_pct)
 
-    now_ts = pd.Timestamp(now).tz_localize(None)
+    now_ts = pd.Timestamp(now)
     current_end = now_ts + pd.Timedelta(minutes=45)
 
     current_candidates = clusters[
