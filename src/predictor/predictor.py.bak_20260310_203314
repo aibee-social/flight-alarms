@@ -269,7 +269,7 @@ def load_flights():
 
 
 def _color_from_probability_pct(prob_pct: int) -> str:
-    if prob_pct >= 70:
+    if prob_pct >= 60:
         return "red"
     if prob_pct >= 35:
         return "orange"
@@ -277,40 +277,12 @@ def _color_from_probability_pct(prob_pct: int) -> str:
 
 
 def _label_from_probability_pct(prob_pct: int) -> str:
-    if prob_pct >= 70:
+    if prob_pct >= 60:
         return "גבוה"
     if prob_pct >= 35:
         return "בינוני"
     return "נמוך"
 
-
-def _neighbor_bonus(current_window, clusters_df) -> int:
-    if clusters_df.empty:
-        return 0
-
-    prev_w = current_window - pd.Timedelta(minutes=10)
-    next_w = current_window + pd.Timedelta(minutes=10)
-
-    bonus = 0
-
-    prev_row = clusters_df[clusters_df["window"] == prev_w]
-    next_row = clusters_df[clusters_df["window"] == next_w]
-
-    if not prev_row.empty:
-        prev_traffic = int(prev_row.iloc[0]["traffic"])
-        if prev_traffic >= 2:
-            bonus += 3
-        if prev_traffic >= 3:
-            bonus += 2
-
-    if not next_row.empty:
-        next_traffic = int(next_row.iloc[0]["traffic"])
-        if next_traffic >= 2:
-            bonus += 3
-        if next_traffic >= 3:
-            bonus += 2
-
-    return min(bonus, 8)
 
 def _traffic_probability(traffic: int, updated_count: int, avg_weight: float, max_cluster: int) -> int:
     if traffic <= 0:
@@ -398,47 +370,13 @@ def compute_dashboard_combined():
 
     now_ts = pd.Timestamp(now).tz_localize(None)
     current_end = now_ts + pd.Timedelta(minutes=45)
+    current_sub = df[(df["dt"] >= now_ts) & (df["dt"] <= current_end)].copy()
 
-    current_candidates = clusters[
-        (clusters["window"] >= now_ts.floor("10min")) &
-        (clusters["window"] <= current_end.floor("10min"))
-    ].copy()
+    current_flights = int(len(current_sub))
+    current_updated = int(current_sub["is_updated"].sum()) if not current_sub.empty else 0
+    current_avg_weight = float(current_sub["weight"].mean()) if not current_sub.empty else 0.6
 
-    if current_candidates.empty:
-        current_flights = 0
-        current_updated = 0
-        current_arrivals = 0
-        current_departures = 0
-        current_prob = 0
-        current_window_label = "אין תנועה ב-45 הדקות הקרובות"
-    else:
-        current_candidates = current_candidates.sort_values(
-            ["probability", "traffic", "updated_count", "window"],
-            ascending=[False, False, False, True]
-        )
-        current_row = current_candidates.iloc[0]
-
-        current_flights = int(current_row["traffic"])
-        current_updated = int(current_row["updated_count"])
-        current_arrivals = int(current_row["arrivals"])
-        current_departures = int(current_row["departures"])
-        current_prob = int(current_row["probability"])
-
-        if current_flights <= 1:
-            current_prob = min(current_prob, 24)
-        elif current_flights == 2:
-            current_prob = min(current_prob, 40)
-        elif current_flights == 3:
-            current_prob = min(current_prob, 56)
-        elif current_flights == 4:
-            current_prob = min(current_prob, 70)
-        else:
-            current_prob = min(current_prob, 82)
-
-        current_start = current_row["window"]
-        current_finish = current_start + pd.Timedelta(minutes=10)
-        current_window_label = f'{current_start.strftime("%H:%M")}–{current_finish.strftime("%H:%M")}'
-
+    current_prob = _traffic_probability(current_flights, current_updated, current_avg_weight, max_cluster)
     current_color = _color_from_probability_pct(current_prob)
     current_label = _label_from_probability_pct(current_prob)
 
@@ -458,22 +396,6 @@ def compute_dashboard_combined():
         start = row["window"]
         end = start + pd.Timedelta(minutes=10)
         prob = int(row["probability"])
-
-        traffic_n = int(row["traffic"])
-        if traffic_n <= 1:
-            prob = min(prob, 24)
-        elif traffic_n == 2:
-            prob = min(prob, 44)
-        elif traffic_n == 3:
-            prob = min(prob, 60)
-        elif traffic_n == 4:
-            prob = min(prob, 74)
-        else:
-            prob = min(prob, 84)
-
-        prob += _neighbor_bonus(row["window"], clusters)
-        prob = min(prob, 84)
-
         top_windows.append({
             "start_ts": int(start.timestamp()),
             "label_start_ts": int(start.timestamp()),
@@ -493,65 +415,44 @@ def compute_dashboard_combined():
 
     next_attention_window = top_windows[0] if top_windows else None
 
-    def _build_timeline(source_type=None):
+    def _build_hourly(source_type=None):
         sub = df.copy()
         if source_type:
             sub = sub[sub["type"] == source_type].copy()
         if sub.empty:
             return []
 
-        sub["window10"] = sub["dt"].dt.floor("10min")
-
-        grouped = (
-            sub.groupby("window10")
+        hourly = (
+            sub.assign(hour=sub["dt"].dt.floor("1h"))
+               .groupby("hour")
                .agg(
                    traffic=("flight_number", "size"),
                    updated_count=("is_updated", "sum"),
-                   avg_weight=("weight", "mean"),
-                   arrivals=("type", lambda x: int((x == "arrival").sum())),
-                   departures=("type", lambda x: int((x == "departure").sum()))
+                   avg_weight=("weight", "mean")
                )
                .reset_index()
-               .sort_values("window10")
+               .sort_values("hour")
         )
 
         out = []
-        for _, row in grouped.iterrows():
+        for _, row in hourly.iterrows():
             prob = _traffic_probability(
                 int(row["traffic"]),
                 int(row["updated_count"]),
                 float(row["avg_weight"]),
                 max_cluster
             )
-
-            traffic_n = int(row["traffic"])
-            if traffic_n <= 1:
-                prob = min(prob, 24)
-            elif traffic_n == 2:
-                prob = min(prob, 44)
-            elif traffic_n == 3:
-                prob = min(prob, 60)
-            elif traffic_n == 4:
-                prob = min(prob, 74)
-            else:
-                prob = min(prob, 84)
-
-            prob += _neighbor_bonus(row["window10"], grouped.rename(columns={"window10": "window"}))
-            prob = min(prob, 84)
-
             out.append({
-                "label": row["window10"].strftime("%H:%M"),
-                "probability": int(prob),
+                "hour": row["hour"].strftime("%H:%M"),
+                "probability": prob,
                 "flights": int(row["traffic"]),
-                "arrivals": int(row["arrivals"]),
-                "departures": int(row["departures"]),
-                "color": _color_from_probability_pct(int(prob))
+                "color": _color_from_probability_pct(prob)
             })
         return out
 
-    timeline = _build_timeline(None)
-    arrivals_timeline = _build_timeline("arrival")
-    departures_timeline = _build_timeline("departure")
+    daily = _build_hourly(None)
+    arrivals_daily = _build_hourly("arrival")
+    departures_daily = _build_hourly("departure")
 
     return {
         "updated": updated,
@@ -561,18 +462,15 @@ def compute_dashboard_combined():
             "color": current_color,
             "label": current_label,
             "flights": current_flights,
-            "arrivals": current_arrivals,
-            "departures": current_departures,
-            "updated_count": current_updated,
-            "window": current_window_label,
+            "window": "45 הדקות הקרובות",
             "quality": quality,
             "strong_count": strong_count
         },
         "top_windows": top_windows,
         "next_attention_window": next_attention_window,
-        "timeline": timeline,
-        "arrivals_timeline": arrivals_timeline,
-        "departures_timeline": departures_timeline
+        "daily": daily,
+        "arrivals_daily": arrivals_daily,
+        "departures_daily": departures_daily
     }
 
 def compute_traffic_clusters():

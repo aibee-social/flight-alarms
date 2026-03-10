@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
-from src.predictor.predictor import compute_dashboard
+from src.predictor.predictor import compute_dashboard, compute_dashboard_combined
 
 app = FastAPI()
 
 @app.get("/api/dashboard")
 def dashboard():
     try:
-        return compute_dashboard()
+        return compute_dashboard_combined()
     except Exception as e:
         return JSONResponse(
             status_code=200,

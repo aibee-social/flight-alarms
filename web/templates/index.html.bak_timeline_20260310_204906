@@ -259,7 +259,8 @@
     <section class="grid">
       <div class="card">
         <h2>מצב נוכחי</h2>
-                <div class="current-wrap">
+        <p class="sub">סיכוי משוער לפי הקלאסטר החזק ביותר ב־45 הדקות הקרובות, על בסיס תנועת טיסות בחלונות של 12 דקות.</p>
+        <div class="current-wrap">
           <div class="gauge-wrap">
             <canvas id="gaugeChart"></canvas>
             <div class="gauge-label" id="currentLabel">מחשב מצב...</div>
@@ -276,9 +277,9 @@
     </section>
 
     <section class="card full-card">
-      <h2>ציר זמן — חלונות של 10 דקות</h2>
-      <p class="sub">כל עמודה מייצגת חלון של 10 דקות. ככל שהעמודה גבוהה ואדומה יותר — כך ההסתברות המשוערת גבוהה יותר.</p>
-      <div class="small">הגרף מציג את ההסתברות לכל חלון של 10 דקות, כדי לאפשר לראות גם כמה מקטעים חזקים בתוך אותה שעה.</div>
+      <h2>תחזית ל־24 השעות הקרובות</h2>
+      <p class="sub">גרף לפי שעה. ככל שהעמודה גבוהה ואדומה יותר — כך ההסתברות המשוערת גבוהה יותר.</p>
+      <div class="small">הגרף מציג את ההסתברות הגבוהה ביותר בכל שעה על בסיס חלונות זמן של 12 דקות.</div>
       <div class="chart-wrap">
         
 <div class="daily-mode-switch">
@@ -329,13 +330,13 @@
 
     function colorClass(prob) {
       if (prob < 30) return "green";
-      if (prob < 70) return "orange";
+      if (prob < 60) return "orange";
       return "red";
     }
 
     function gaugeColor(prob) {
       if (prob < 30) return "#22c55e";
-      if (prob < 70) return "#f59e0b";
+      if (prob < 60) return "#f59e0b";
       return "#ef4444";
     }
 
@@ -348,7 +349,7 @@
       const current = data.current;
       document.getElementById("currentLabel").innerText = `רמת סיכון: ${current.label}`;
       document.getElementById("currentQuality").innerText =
-        `${current.window} | תנועות: ${current.flights} | נחיתות: ${current.arrivals} | המראות: ${current.departures} | מעודכנות: ${current.updated_count} | איכות נתונים: ${current.quality}`;
+        `איכות נתונים: ${current.quality} | טיסות עם מידע מעודכן בחלון: ${current.strong_count}`;
 
       const gaugeData = {
         datasets: [{
@@ -421,13 +422,13 @@
       }
 
       function getDailyDataset() {
-        if (currentDailyMode === "arrivals") return data.arrivals_timeline || [];
-        if (currentDailyMode === "departures") return data.departures_timeline || [];
-        return data.timeline || [];
+        if (currentDailyMode === "arrivals") return data.arrivals_daily || [];
+        if (currentDailyMode === "departures") return data.departures_daily || [];
+        return data.daily || [];
       }
 
       const selectedDaily = getDailyDataset();
-      const dailyLabels = selectedDaily.map(x => x.label);
+      const dailyLabels = selectedDaily.map(x => x.hour);
       const dailyValues = selectedDaily.map(x => x.probability);
       const dailyColors = selectedDaily.map(x => gaugeColor(x.probability));
 

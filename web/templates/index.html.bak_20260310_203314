@@ -215,51 +215,23 @@
         width: 100%;
       }
     }
-  
-.daily-mode-switch {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-}
-
-.mode-btn {
-  background: #162235;
-  color: #e5e7eb;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 999px;
-  padding: 8px 14px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.mode-btn:hover {
-  background: #1d2b42;
-}
-
-.mode-btn.active {
-  background: #2a3a56;
-  border-color: rgba(255,255,255,0.24);
-}
-
-</style>
+  </style>
 </head>
 <body>
   <div class="container">
     <section class="hero">
       <h1>תחזית הסתברות לשיגורים</h1>
       <p style="color:#fbbf24;font-size:15px;">גרסה ניסיונית (Beta)</p>
-      <p>הערכה דינמית ניסיונית המבוססת על ריכוז תנועת טיסות — נחיתות והמראות — זמני תנועה צפויים ועדכונים בזמן אמת.</p>
-      <p>הדף מתמקד בהערכת חלונות זמן רלוונטיים לשיגורים למרכז הארץ, על בסיס דפוסי צפיפות של תנועת טיסות נכנסות ויוצאות.</p>
+      <p>הערכה דינמית ניסיונית המבוססת על ריכוז טיסות נכנסות, זמני נחיתה צפויים ועדכונים בזמן אמת.</p>
+      <p>הדף מתמקד בהערכת חלונות זמן רלוונטיים לשיגורים מאיראן למרכז הארץ, על בסיס דפוסי צפיפות של נחיתות נכנסות.</p>
       <div class="updated" id="updatedAt">עדכון אחרון: --</div>
     </section>
 
     <section class="grid">
       <div class="card">
         <h2>מצב נוכחי</h2>
-                <div class="current-wrap">
+        <p class="sub">סיכוי משוער לפי הקלאסטר החזק ביותר ב־45 הדקות הקרובות, על בסיס חלונות של 12 דקות.</p>
+        <div class="current-wrap">
           <div class="gauge-wrap">
             <canvas id="gaugeChart"></canvas>
             <div class="gauge-label" id="currentLabel">מחשב מצב...</div>
@@ -270,23 +242,17 @@
 
       <div class="card">
         <h2>חלונות הזמן הקרובים עם הסבירות הגבוהה ביותר</h2>
-        <p class="sub">אלו חלונות הזמן הקרובים שבהם זוהה ריכוז צפוף יחסית של תנועת טיסות, עם משקל גבוה יותר לטיסות מעודכנות בזמן אמת.</p>
+        <p class="sub">אלו חלונות הזמן הקרובים שבהם זוהה ריכוז צפוף יחסית של טיסות נכנסות, עם משקל גבוה יותר לטיסות מעודכנות בזמן אמת.</p>
         <div class="window-list" id="topWindows"></div>
       </div>
     </section>
 
     <section class="card full-card">
-      <h2>ציר זמן — חלונות של 10 דקות</h2>
-      <p class="sub">כל עמודה מייצגת חלון של 10 דקות. ככל שהעמודה גבוהה ואדומה יותר — כך ההסתברות המשוערת גבוהה יותר.</p>
-      <div class="small">הגרף מציג את ההסתברות לכל חלון של 10 דקות, כדי לאפשר לראות גם כמה מקטעים חזקים בתוך אותה שעה.</div>
+      <h2>תחזית ל־24 השעות הקרובות</h2>
+      <p class="sub">גרף לפי שעה. ככל שהעמודה גבוהה ואדומה יותר — כך ההסתברות המשוערת גבוהה יותר.</p>
+      <div class="small">הגרף מציג את ההסתברות הגבוהה ביותר בכל שעה על בסיס חלונות זמן של 12 דקות.</div>
       <div class="chart-wrap">
-        
-<div class="daily-mode-switch">
-  <button id="modeCombined" class="mode-btn active" type="button">משולב</button>
-  <button id="modeArrivals" class="mode-btn" type="button">נחיתות</button>
-  <button id="modeDepartures" class="mode-btn" type="button">המראות</button>
-</div>
-<canvas id="dailyChart" height="120"></canvas>
+        <canvas id="dailyChart" height="120"></canvas>
       </div>
     </section>
 
@@ -329,13 +295,13 @@
 
     function colorClass(prob) {
       if (prob < 30) return "green";
-      if (prob < 70) return "orange";
+      if (prob < 60) return "orange";
       return "red";
     }
 
     function gaugeColor(prob) {
       if (prob < 30) return "#22c55e";
-      if (prob < 70) return "#f59e0b";
+      if (prob < 60) return "#f59e0b";
       return "#ef4444";
     }
 
@@ -348,7 +314,7 @@
       const current = data.current;
       document.getElementById("currentLabel").innerText = `רמת סיכון: ${current.label}`;
       document.getElementById("currentQuality").innerText =
-        `${current.window} | תנועות: ${current.flights} | נחיתות: ${current.arrivals} | המראות: ${current.departures} | מעודכנות: ${current.updated_count} | איכות נתונים: ${current.quality}`;
+        `איכות נתונים: ${current.quality} | טיסות עם מידע מעודכן בחלון: ${current.strong_count}`;
 
       const gaugeData = {
         datasets: [{
@@ -407,13 +373,13 @@
         container.appendChild(row);
       } else {
         topWindows.forEach(w => {
-          const row = document.createElement("div");
+          row = document.createElement("div");
           row.className = "window-item";
           row.innerHTML = `
             <div class="pill ${colorClass(w.probability)}">${w.probability}%</div>
             <div class="window-main">
               <div class="window-time">${w.label}</div>
-              <div class="window-meta">תנועות בחלון: ${w.flights} | תנועות צפופות בחלון 10 דק: ${w.best10}${w.gap10 ? " | פער מינימלי: " + w.gap10 + " דק" : ""}</div>
+              <div class="window-meta">טיסות בחלון: ${w.flights} | טיסות צפופות בחלון 10 דק: ${w.best10}${w.gap10 ? " | פער מינימלי: " + w.gap10 + " דק" : ""}</div>
             </div>
           `;
           container.appendChild(row);
@@ -421,13 +387,13 @@
       }
 
       function getDailyDataset() {
-        if (currentDailyMode === "arrivals") return data.arrivals_timeline || [];
-        if (currentDailyMode === "departures") return data.departures_timeline || [];
-        return data.timeline || [];
+        if (currentDailyMode === "arrivals") return data.arrivals_daily || [];
+        if (currentDailyMode === "departures") return data.departures_daily || [];
+        return data.daily || [];
       }
 
       const selectedDaily = getDailyDataset();
-      const dailyLabels = selectedDaily.map(x => x.label);
+      const dailyLabels = selectedDaily.map(x => x.hour);
       const dailyValues = selectedDaily.map(x => x.probability);
       const dailyColors = selectedDaily.map(x => gaugeColor(x.probability));
 

@@ -284,34 +284,6 @@ def _label_from_probability_pct(prob_pct: int) -> str:
     return "נמוך"
 
 
-def _neighbor_bonus(current_window, clusters_df) -> int:
-    if clusters_df.empty:
-        return 0
-
-    prev_w = current_window - pd.Timedelta(minutes=10)
-    next_w = current_window + pd.Timedelta(minutes=10)
-
-    bonus = 0
-
-    prev_row = clusters_df[clusters_df["window"] == prev_w]
-    next_row = clusters_df[clusters_df["window"] == next_w]
-
-    if not prev_row.empty:
-        prev_traffic = int(prev_row.iloc[0]["traffic"])
-        if prev_traffic >= 2:
-            bonus += 3
-        if prev_traffic >= 3:
-            bonus += 2
-
-    if not next_row.empty:
-        next_traffic = int(next_row.iloc[0]["traffic"])
-        if next_traffic >= 2:
-            bonus += 3
-        if next_traffic >= 3:
-            bonus += 2
-
-    return min(bonus, 8)
-
 def _traffic_probability(traffic: int, updated_count: int, avg_weight: float, max_cluster: int) -> int:
     if traffic <= 0:
         return 12
@@ -471,9 +443,6 @@ def compute_dashboard_combined():
         else:
             prob = min(prob, 84)
 
-        prob += _neighbor_bonus(row["window"], clusters)
-        prob = min(prob, 84)
-
         top_windows.append({
             "start_ts": int(start.timestamp()),
             "label_start_ts": int(start.timestamp()),
@@ -535,9 +504,6 @@ def compute_dashboard_combined():
                 prob = min(prob, 74)
             else:
                 prob = min(prob, 84)
-
-            prob += _neighbor_bonus(row["window10"], grouped.rename(columns={"window10": "window"}))
-            prob = min(prob, 84)
 
             out.append({
                 "label": row["window10"].strftime("%H:%M"),

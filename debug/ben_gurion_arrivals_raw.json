@@ -1,0 +1,422 @@
+[
+  {
+    "airline": "TRAVAIR",
+    "flight_number": "TVR 7734",
+    "origin_city": "דובאי",
+    "terminal": "3",
+    "scheduled_time": "19:00",
+    "scheduled_date": "10/03",
+    "updated_time": "21:50",
+    "status": "סופי"
+  },
+  {
+    "airline": "TRAVAIR",
+    "flight_number": "TVR 7738",
+    "origin_city": "דובאי",
+    "terminal": "3",
+    "scheduled_time": "19:05",
+    "scheduled_date": "10/03",
+    "updated_time": "00:31",
+    "status": "סופי"
+  },
+  {
+    "airline": "ISRAIR AIRLINES",
+    "flight_number": "6H 348",
+    "origin_city": "רומא",
+    "terminal": "3",
+    "scheduled_time": "20:00",
+    "scheduled_date": "10/03",
+    "updated_time": "20:17",
+    "status": "נחתה"
+  },
+  {
+    "airline": "ISRAIR AIRLINES",
+    "flight_number": "6H 898",
+    "origin_city": "טביליסי",
+    "terminal": "3",
+    "scheduled_time": "20:30",
+    "scheduled_date": "10/03",
+    "updated_time": "20:45",
+    "status": "נחתה"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 416",
+    "origin_city": "לונדון",
+    "terminal": "3",
+    "scheduled_time": "21:55",
+    "scheduled_date": "10/03",
+    "updated_time": "22:21",
+    "status": "סופי"
+  },
+  {
+    "airline": "ARKIA ISRAELI AIRLINES",
+    "flight_number": "IZ 364",
+    "origin_city": "סופיה",
+    "terminal": "3",
+    "scheduled_time": "22:15",
+    "scheduled_date": "10/03",
+    "updated_time": "23:15",
+    "status": "עיכוב"
+  },
+  {
+    "airline": "ISRAIR AIRLINES",
+    "flight_number": "6H 720",
+    "origin_city": "סופיה",
+    "terminal": "3",
+    "scheduled_time": "22:30",
+    "scheduled_date": "10/03",
+    "updated_time": "22:10",
+    "status": "סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 452",
+    "origin_city": "סופיה",
+    "terminal": "3",
+    "scheduled_time": "22:30",
+    "scheduled_date": "10/03",
+    "updated_time": "22:15",
+    "status": "סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 472",
+    "origin_city": "בוקרשט",
+    "terminal": "3",
+    "scheduled_time": "23:00",
+    "scheduled_date": "10/03",
+    "updated_time": "23:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ARKIA ISRAELI AIRLINES",
+    "flight_number": "IZ 284",
+    "origin_city": "פראג",
+    "terminal": "3",
+    "scheduled_time": "00:00",
+    "scheduled_date": "11/03",
+    "updated_time": "00:04",
+    "status": "סופי"
+  },
+  {
+    "airline": "ARKIA ISRAELI AIRLINES",
+    "flight_number": "IZ 1418",
+    "origin_city": "טביליסי",
+    "terminal": "3",
+    "scheduled_time": "00:00",
+    "scheduled_date": "11/03",
+    "updated_time": "02:05",
+    "status": "עיכוב"
+  },
+  {
+    "airline": "AIR HAIFA",
+    "flight_number": "E2 158",
+    "origin_city": "לרנקה",
+    "terminal": "3",
+    "scheduled_time": "01:00",
+    "scheduled_date": "11/03",
+    "updated_time": "03:00",
+    "status": "עיכוב"
+  },
+  {
+    "airline": "ISRAIR AIRLINES",
+    "flight_number": "6H 946",
+    "origin_city": "אתונה",
+    "terminal": "3",
+    "scheduled_time": "01:55",
+    "scheduled_date": "11/03",
+    "updated_time": "03:45",
+    "status": "עיכוב"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 454",
+    "origin_city": "מינכן",
+    "terminal": "3",
+    "scheduled_time": "02:30",
+    "scheduled_date": "11/03",
+    "updated_time": "02:30",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 1360",
+    "origin_city": "בודפשט",
+    "terminal": "3",
+    "scheduled_time": "03:00",
+    "scheduled_date": "11/03",
+    "updated_time": "03:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 0428A",
+    "origin_city": "פריס",
+    "terminal": "3",
+    "scheduled_time": "03:30",
+    "scheduled_date": "11/03",
+    "updated_time": "03:30",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 086",
+    "origin_city": "בנגקוק",
+    "terminal": "3",
+    "scheduled_time": "04:00",
+    "scheduled_date": "11/03",
+    "updated_time": "04:10",
+    "status": "סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 1028",
+    "origin_city": "ניוארק",
+    "terminal": "3",
+    "scheduled_time": "05:00",
+    "scheduled_date": "11/03",
+    "updated_time": "04:42",
+    "status": "סופי"
+  },
+  {
+    "airline": "ARKIA ISRAELI AIRLINES",
+    "flight_number": "IZ 166",
+    "origin_city": "לרנקה",
+    "terminal": "3",
+    "scheduled_time": "05:45",
+    "scheduled_date": "11/03",
+    "updated_time": "05:45",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ARKIA ISRAELI AIRLINES",
+    "flight_number": "IZ 1216",
+    "origin_city": "אתונה",
+    "terminal": "3",
+    "scheduled_time": "06:20",
+    "scheduled_date": "11/03",
+    "updated_time": "06:20",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ARKIA ISRAELI AIRLINES",
+    "flight_number": "IZ 1214",
+    "origin_city": "אתונה",
+    "terminal": "3",
+    "scheduled_time": "06:40",
+    "scheduled_date": "11/03",
+    "updated_time": "08:20",
+    "status": "עיכוב"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 094",
+    "origin_city": "בנגקוק",
+    "terminal": "3",
+    "scheduled_time": "07:00",
+    "scheduled_date": "11/03",
+    "updated_time": "07:01",
+    "status": "סופי"
+  },
+  {
+    "airline": "ISRAIR AIRLINES",
+    "flight_number": "6H 948",
+    "origin_city": "אתונה",
+    "terminal": "3",
+    "scheduled_time": "08:00",
+    "scheduled_date": "11/03",
+    "updated_time": "08:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "AIR HAIFA",
+    "flight_number": "E2 160",
+    "origin_city": "לרנקה",
+    "terminal": "3",
+    "scheduled_time": "08:30",
+    "scheduled_date": "11/03",
+    "updated_time": "08:30",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 1026",
+    "origin_city": "ניוארק",
+    "terminal": "3",
+    "scheduled_time": "09:00",
+    "scheduled_date": "11/03",
+    "updated_time": "09:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 1510",
+    "origin_city": "טביליסי",
+    "terminal": "3",
+    "scheduled_time": "11:00",
+    "scheduled_date": "11/03",
+    "updated_time": "11:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ISRAIR AIRLINES",
+    "flight_number": "6H 992",
+    "origin_city": "לרנקה",
+    "terminal": "3",
+    "scheduled_time": "12:00",
+    "scheduled_date": "11/03",
+    "updated_time": "12:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ISRAIR AIRLINES",
+    "flight_number": "6H 344",
+    "origin_city": "רומא",
+    "terminal": "3",
+    "scheduled_time": "12:30",
+    "scheduled_date": "11/03",
+    "updated_time": "12:30",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 482",
+    "origin_city": "מילאנו",
+    "terminal": "3",
+    "scheduled_time": "13:00",
+    "scheduled_date": "11/03",
+    "updated_time": "13:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 420",
+    "origin_city": "פריס",
+    "terminal": "3",
+    "scheduled_time": "13:30",
+    "scheduled_date": "11/03",
+    "updated_time": "13:30",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ISRAIR AIRLINES",
+    "flight_number": "6H 896",
+    "origin_city": "טביליסי",
+    "terminal": "3",
+    "scheduled_time": "14:00",
+    "scheduled_date": "11/03",
+    "updated_time": "14:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ARKIA ISRAELI AIRLINES",
+    "flight_number": "IZ 294",
+    "origin_city": "בודפשט",
+    "terminal": "3",
+    "scheduled_time": "15:00",
+    "scheduled_date": "11/03",
+    "updated_time": "15:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 1512",
+    "origin_city": "טביליסי",
+    "terminal": "3",
+    "scheduled_time": "15:55",
+    "scheduled_date": "11/03",
+    "updated_time": "15:55",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "AIR HAIFA",
+    "flight_number": "E2 162",
+    "origin_city": "אתונה",
+    "terminal": "3",
+    "scheduled_time": "16:00",
+    "scheduled_date": "11/03",
+    "updated_time": "16:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ARKIA ISRAELI AIRLINES",
+    "flight_number": "IZ 336",
+    "origin_city": "רומא",
+    "terminal": "3",
+    "scheduled_time": "16:30",
+    "scheduled_date": "11/03",
+    "updated_time": "16:30",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 416",
+    "origin_city": "לונדון",
+    "terminal": "3",
+    "scheduled_time": "17:00",
+    "scheduled_date": "11/03",
+    "updated_time": "17:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 488",
+    "origin_city": "מילאנו",
+    "terminal": "3",
+    "scheduled_time": "17:55",
+    "scheduled_date": "11/03",
+    "updated_time": "17:55",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ISRAIR AIRLINES",
+    "flight_number": "6H 768",
+    "origin_city": "פראג",
+    "terminal": "3",
+    "scheduled_time": "18:00",
+    "scheduled_date": "11/03",
+    "updated_time": "18:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "ARKIA ISRAELI AIRLINES",
+    "flight_number": "IZ 744",
+    "origin_city": "פריס",
+    "terminal": "3",
+    "scheduled_time": "18:30",
+    "scheduled_date": "11/03",
+    "updated_time": "18:30",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "AIR HAIFA",
+    "flight_number": "E2 164",
+    "origin_city": "אתונה",
+    "terminal": "3",
+    "scheduled_time": "19:00",
+    "scheduled_date": "11/03",
+    "updated_time": "19:00",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "EL AL ISRAEL AIRLINES",
+    "flight_number": "LY 066",
+    "origin_city": "בנגקוק",
+    "terminal": "3",
+    "scheduled_time": "19:15",
+    "scheduled_date": "11/03",
+    "updated_time": "19:15",
+    "status": "לא סופי"
+  },
+  {
+    "airline": "AIR HAIFA",
+    "flight_number": "E2 166",
+    "origin_city": "לרנקה",
+    "terminal": "3",
+    "scheduled_time": "20:00",
+    "scheduled_date": "11/03",
+    "updated_time": "20:00",
+    "status": "לא סופי"
+  }
+]
