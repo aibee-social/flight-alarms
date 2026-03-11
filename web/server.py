@@ -1,19 +1,40 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
-from src.predictor.predictor import compute_dashboard, compute_dashboard_combined
 from apscheduler.schedulers.background import BackgroundScheduler
 import subprocess
+import sqlite3
+from pathlib import Path
+
+from src.predictor.predictor import compute_dashboard_combined
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+scheduler = BackgroundScheduler()
+
 app = FastAPI()
- 
+
+
 def run_update():
     try:
-        subprocess.run(["bash", "update_all_traffic.sh"], check=True)
+        subprocess.run(
+            ["bash", "update_all_traffic.sh"],
+            cwd=str(BASE_DIR),
+            check=False,
+        )
     except Exception as e:
         print("update job failed:", e)
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(run_update, "interval", minutes=5)
-scheduler.start()
+
+@app.on_event("startup")
+def startup_event():
+    if not scheduler.running:
+        scheduler.add_job(run_update, "interval", minutes=5, id="flight_update", replace_existing=True)
+        scheduler.start()
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
 
 
 @app.get("/api/dashboard")
@@ -41,7 +62,21 @@ def dashboard():
             }
         )
 
+
+@app.get("/api/db_check")
+def db_check():
+    conn = sqlite3.connect(str(BASE_DIR / "data" / "flights.db"))
+    c = conn.cursor()
+    flights_current_rows = c.execute("select count(*) from flights_current").fetchone()[0]
+    departures_current_rows = c.execute("select count(*) from departures_current").fetchone()[0]
+    conn.close()
+    return {
+        "flights_current_rows": flights_current_rows,
+        "departures_current_rows": departures_current_rows
+    }
+
+
 @app.get("/", response_class=HTMLResponse)
 def index():
-    with open("web/templates/index.html", "r", encoding="utf-8") as f:
+    with open(BASE_DIR / "web" / "templates" / "index.html", "r", encoding="utf-8") as f:
         return f.read()
