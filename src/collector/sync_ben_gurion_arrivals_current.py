@@ -8,9 +8,7 @@ def main():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
-    c.execute("""
-    DELETE FROM flights_current
-    """)
+    c.execute("DELETE FROM flights_current")
 
     c.execute("""
     INSERT OR REPLACE INTO flights_current (
@@ -37,26 +35,22 @@ def main():
         eta_israel
     )
     SELECT
-        TRIM(flight_number) AS flight_number,
-        airline,
+        TRIM(r.flight_number) AS flight_number,
+        r.airline,
         NULL AS origin_airport,
-        origin_city,
+        r.origin_city,
 
         NULL AS scheduled_arrival_utc,
-        '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || scheduled_time || ':00' AS scheduled_arrival_israel,
+        strftime('%Y','now') || '-' || substr(r.scheduled_date,4,2) || '-' || substr(r.scheduled_date,1,2) || ' ' || r.scheduled_time || ':00' AS scheduled_arrival_israel,
 
         NULL AS real_arrival_utc,
-        CASE
-          WHEN status='נחתה'
-          THEN '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || updated_time || ':00'
-          ELSE NULL
-        END AS real_arrival_israel,
+        NULL AS real_arrival_israel,
 
         CASE
-          WHEN status='נחתה' THEN 'landed'
-          WHEN status='בנחיתה' THEN 'estimated'
-          WHEN status='עיכוב' THEN 'delayed'
-          WHEN status='סופי' THEN 'estimated'
+          WHEN r.status='נחתה' THEN 'landed'
+          WHEN r.status='בנחיתה' THEN 'estimated'
+          WHEN r.status='עיכוב' THEN 'delayed'
+          WHEN r.status='סופי' THEN 'estimated'
           ELSE 'scheduled'
         END AS status,
 
@@ -69,8 +63,8 @@ def main():
 
         NULL AS estimated_arrival_utc,
         CASE
-          WHEN updated_time IS NOT NULL AND TRIM(updated_time) != ''
-          THEN '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || updated_time || ':00'
+          WHEN r.updated_time IS NOT NULL AND TRIM(r.updated_time) != ''
+          THEN strftime('%Y','now') || '-' || substr(r.scheduled_date,4,2) || '-' || substr(r.scheduled_date,1,2) || ' ' || r.updated_time || ':00'
           ELSE NULL
         END AS estimated_arrival_israel,
 
@@ -78,18 +72,28 @@ def main():
         NULL AS registration,
         NULL AS eta_utc,
         CASE
-          WHEN updated_time IS NOT NULL AND TRIM(updated_time) != ''
-          THEN '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || updated_time || ':00'
+          WHEN r.updated_time IS NOT NULL AND TRIM(r.updated_time) != ''
+          THEN strftime('%Y','now') || '-' || substr(r.scheduled_date,4,2) || '-' || substr(r.scheduled_date,1,2) || ' ' || r.updated_time || ':00'
           ELSE NULL
         END AS eta_israel
 
-    FROM flights_ben_gurion_raw
-    WHERE TRIM(flight_number) != ''
+    FROM flights_ben_gurion_raw r
+    JOIN (
+        SELECT
+            flight_number,
+            scheduled_date,
+            MAX(id) AS max_id
+        FROM flights_ben_gurion_raw
+        WHERE datetime(scraped_at) >= datetime('now', '-8 hours')
+        GROUP BY flight_number, scheduled_date
+    ) latest
+      ON r.id = latest.max_id
+    WHERE TRIM(r.flight_number) != ''
     """)
 
     conn.commit()
     conn.close()
-    print("flights_current refreshed from Ben Gurion arrivals raw")
+    print("flights_current refreshed from arrivals history")
 
 
 if __name__ == "__main__":

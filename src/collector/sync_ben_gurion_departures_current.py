@@ -43,37 +43,36 @@ def main():
         scraped_at
     )
     SELECT
-        TRIM(flight_number) AS flight_number,
-        airline,
-        origin_city AS destination_city,
-        terminal,
-        scheduled_date,
-        '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || scheduled_time || ':00' AS scheduled_departure_israel,
+        TRIM(r.flight_number) AS flight_number,
+        r.airline,
+        r.origin_city AS destination_city,
+        r.terminal,
+        r.scheduled_date,
+        strftime('%Y','now') || '-' || substr(r.scheduled_date,4,2) || '-' || substr(r.scheduled_date,1,2) || ' ' || r.scheduled_time || ':00' AS scheduled_departure_israel,
         CASE
-          WHEN updated_time IS NOT NULL AND TRIM(updated_time) != '' THEN
-            CASE
-              WHEN (
-                CAST(substr(updated_time,1,2) AS INTEGER) * 60 + CAST(substr(updated_time,4,2) AS INTEGER)
-              ) < (
-                CAST(substr(scheduled_time,1,2) AS INTEGER) * 60 + CAST(substr(scheduled_time,4,2) AS INTEGER)
-              ) - 360
-              THEN datetime(
-                '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || updated_time || ':00',
-                '+1 day'
-              )
-              ELSE '2026-' || substr(scheduled_date,4,2) || '-' || substr(scheduled_date,1,2) || ' ' || updated_time || ':00'
-            END
+          WHEN r.updated_time IS NOT NULL AND TRIM(r.updated_time) != ''
+          THEN strftime('%Y','now') || '-' || substr(r.scheduled_date,4,2) || '-' || substr(r.scheduled_date,1,2) || ' ' || r.updated_time || ':00'
           ELSE NULL
         END AS estimated_departure_israel,
-        gate_info,
-        scraped_at
-    FROM flights_ben_gurion_departures_raw
-    WHERE TRIM(flight_number) != ''
+        r.gate_info,
+        r.scraped_at
+    FROM flights_ben_gurion_departures_raw r
+    JOIN (
+        SELECT
+            flight_number,
+            scheduled_date,
+            MAX(id) AS max_id
+        FROM flights_ben_gurion_departures_raw
+        WHERE datetime(scraped_at) >= datetime('now', '-8 hours')
+        GROUP BY flight_number, scheduled_date
+    ) latest
+      ON r.id = latest.max_id
+    WHERE TRIM(r.flight_number) != ''
     """)
 
     conn.commit()
     conn.close()
-    print("departures_current refreshed from Ben Gurion departures raw")
+    print("departures_current refreshed from departures history")
 
 
 if __name__ == "__main__":

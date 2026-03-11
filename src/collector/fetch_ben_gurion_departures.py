@@ -36,7 +36,6 @@ def save_rows(rows: List[Dict]) -> None:
 
     scraped_at = time.strftime("%Y-%m-%d %H:%M:%S")
 
-    conn.execute("DELETE FROM flights_ben_gurion_departures_raw")
 
     for row in rows:
         conn.execute("""

@@ -230,7 +230,13 @@ def load_flights():
         except Exception:
             return 0.0
 
-    df["confidence"] = df.apply(lambda row: _extract_confidence(flight_confidence(row)), axis=1)
+    confidence_values = []
+    for _, row in df.iterrows():
+        try:
+            confidence_values.append(float(_extract_confidence(flight_confidence(row))))
+        except Exception:
+            confidence_values.append(0.6)
+    df["confidence"] = confidence_values
 
     type_info = df.apply(lambda r: airline_weight(r.get("airline"), r.get("flight_number")), axis=1)
     df["flight_type"] = [x[1] for x in type_info]
