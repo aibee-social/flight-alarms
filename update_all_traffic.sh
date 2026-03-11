@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cd ~/Projects/flight_alarms || exit 1
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR" || exit 1
 
 LOCKDIR="/tmp/flight_alarms_update.lock"
 
@@ -13,7 +14,9 @@ trap 'rm -rf "$LOCKDIR"' EXIT
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] starting combined update"
 
-source .venv/bin/activate
+if [ -f ".venv/bin/activate" ]; then
+  source .venv/bin/activate
+fi
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] arrivals..."
 python src/collector/fetch_ben_gurion.py

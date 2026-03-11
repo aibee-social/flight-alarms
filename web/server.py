@@ -87,28 +87,56 @@ def index():
 def debug_db():
     import sqlite3, os
 
-    db = "data/flights.db"
+    db = str(BASE_DIR / "data" / "flights.db")
 
-    conn = sqlite3.connect(db)
-    c = conn.cursor()
+    try:
+        conn = sqlite3.connect(db)
+        c = conn.cursor()
 
-    flights_current = c.execute(
-        "select count(*) from flights_current"
-    ).fetchone()[0]
+        tables = [
+            row[0]
+            for row in c.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+            ).fetchall()
+        ]
 
-    departures_current = c.execute(
-        "select count(*) from departures_current"
-    ).fetchone()[0]
+        out = {
+            "db_path": os.path.abspath(db),
+            "tables": tables,
+        }
 
-    flights_history = c.execute(
-        "select count(*) from flights_history"
-    ).fetchone()[0]
+        for table_name in [
+            "flights_current",
+            "departures_current",
+            "traffic_windows_history",
+            "flights_ben_gurion_raw",
+            "flights_ben_gurion_departures_raw"
+        ]:
+            try:
+                count = c.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
+                out[table_name] = count
+            except Exception as e:
+                out[table_name] = f"ERROR: {e}"
 
-    conn.close()
+        try:
+            out["latest_arrivals_scraped_at"] = c.execute(
+                "SELECT MAX(scraped_at) FROM flights_ben_gurion_raw"
+            ).fetchone()[0]
+        except Exception as e:
+            out["latest_arrivals_scraped_at"] = f"ERROR: {e}"
 
-    return {
-        "db_path": os.path.abspath(db),
-        "flights_current": flights_current,
-        "departures_current": departures_current,
-        "flights_history": flights_history
-    }
+        try:
+            out["latest_departures_scraped_at"] = c.execute(
+                "SELECT MAX(scraped_at) FROM flights_ben_gurion_departures_raw"
+            ).fetchone()[0]
+        except Exception as e:
+            out["latest_departures_scraped_at"] = f"ERROR: {e}"
+
+        conn.close()
+        return out
+
+    except Exception as e:
+        return {
+            "error": str(e),
+            "db_path": os.path.abspath(db)
+        }
