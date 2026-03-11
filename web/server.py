@@ -80,3 +80,35 @@ def db_check():
 def index():
     with open(BASE_DIR / "web" / "templates" / "index.html", "r", encoding="utf-8") as f:
         return f.read()
+
+
+
+@app.get("/api/debug_db")
+def debug_db():
+    import sqlite3, os
+
+    db = "data/flights.db"
+
+    conn = sqlite3.connect(db)
+    c = conn.cursor()
+
+    flights_current = c.execute(
+        "select count(*) from flights_current"
+    ).fetchone()[0]
+
+    departures_current = c.execute(
+        "select count(*) from departures_current"
+    ).fetchone()[0]
+
+    flights_history = c.execute(
+        "select count(*) from flights_history"
+    ).fetchone()[0]
+
+    conn.close()
+
+    return {
+        "db_path": os.path.abspath(db),
+        "flights_current": flights_current,
+        "departures_current": departures_current,
+        "flights_history": flights_history
+    }
