@@ -1,8 +1,20 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
 from src.predictor.predictor import compute_dashboard, compute_dashboard_combined
-
+from apscheduler.schedulers.background import BackgroundScheduler
+import subprocess
 app = FastAPI()
+ 
+def run_update():
+    try:
+        subprocess.run(["bash", "update_all_traffic.sh"], check=True)
+    except Exception as e:
+        print("update job failed:", e)
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(run_update, "interval", minutes=5)
+scheduler.start()
+
 
 @app.get("/api/dashboard")
 def dashboard():
