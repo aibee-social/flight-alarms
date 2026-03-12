@@ -346,6 +346,306 @@ def _traffic_probability(traffic: int, updated_count: int, avg_weight: float, ma
 
 
 
+
+
+def compute_window_components():
+    import pandas as pd
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    df = load_all_traffic().copy()
+    if df.empty:
+        return pd.DataFrame()
+
+    df["dt"] = pd.to_datetime(df["dt"], errors="coerce")
+    df = df.dropna(subset=["dt"]).copy()
+    df["window"] = df["dt"].dt.floor("10min")
+
+    grouped = (
+        df.groupby("window")
+          .agg(
+              flights=("flight_number", "size"),
+              arrivals=("type", lambda x: int((x == "arrival").sum())),
+              departures=("type", lambda x: int((x == "departure").sum())),
+              updated_count=("is_updated", "sum"),
+              avg_weight=("weight", "mean"),
+              sum_weight=("weight", "sum")
+          )
+          .reset_index()
+          .sort_values("window")
+    )
+
+    if grouped.empty:
+        return grouped
+
+    # פער פנימי מינימלי בין טיסות באותו חלון
+    gap_map = {}
+    for w, sub in df.groupby("window"):
+        sub = sub.sort_values("dt")
+        if len(sub) < 2:
+            gap_map[w] = None
+        else:
+            mins = sub["dt"].diff().dropna().dt.total_seconds().div(60)
+            gap_map[w] = float(mins.min()) if not mins.empty else None
+
+    grouped["min_gap"] = grouped["window"].map(gap_map)
+
+    def _gap_score(g):
+        if g is None or pd.isna(g):
+            return 0.0
+        if g <= 3:
+            return 1.0
+        if g <= 5:
+            return 0.8
+        if g <= 8:
+            return 0.5
+        if g <= 10:
+            return 0.25
+        return 0.0
+
+    grouped["gap_score"] = grouped["min_gap"].apply(_gap_score)
+
+    # בונוס על ערבוב בין המראות ונחיתות
+    grouped["mixed_flag"] = ((grouped["arrivals"] > 0) & (grouped["departures"] > 0)).astype(int)
+
+    # חלונות שכנים עד 20 דקות
+    temp = grouped.set_index("window")["flights"].to_dict()
+    neighbor_strength = []
+    for w in grouped["window"]:
+        v = (
+            0.35 * temp.get(w - pd.Timedelta(minutes=10), 0) +
+            0.35 * temp.get(w + pd.Timedelta(minutes=10), 0) +
+            0.15 * temp.get(w - pd.Timedelta(minutes=20), 0) +
+            0.15 * temp.get(w + pd.Timedelta(minutes=20), 0)
+        )
+        neighbor_strength.append(float(v))
+    grouped["neighbor_strength"] = neighbor_strength
+
+    # כמה אשכולות באותה שעה
+    grouped["hour_bucket"] = grouped["window"].dt.floor("1h")
+    hour_counts = grouped.groupby("hour_bucket").size().to_dict()
+    grouped["clusters_in_hour"] = grouped["hour_bucket"].map(hour_counts).fillna(1).astype(int)
+    grouped["hour_cluster_bonus"] = grouped["clusters_in_hour"].apply(lambda x: max(0, x - 1))
+
+    # רצף חלונות עם לפחות 2 טיסות או משקל גבוה
+    grouped["is_strongish"] = ((grouped["flights"] >= 2) | (grouped["sum_weight"] >= 1.7)).astype(int)
+
+    streak_vals = []
+    strong_set = set(grouped.loc[grouped["is_strongish"] == 1, "window"].tolist())
+    for w in grouped["window"]:
+        streak = 0
+        for delta in [-20, -10, 10, 20]:
+            if w + pd.Timedelta(minutes=delta) in strong_set:
+                streak += 1
+        streak_vals.append(streak)
+    grouped["streak_strength"] = streak_vals
+
+    # raw score
+    grouped["raw_score"] = (
+        0.50 * grouped["flights"] +
+        0.80 * grouped["sum_weight"] +
+        0.30 * grouped["updated_count"] +
+        0.35 * grouped["neighbor_strength"] +
+        0.25 * grouped["hour_cluster_bonus"] +
+        0.25 * grouped["streak_strength"] +
+        0.15 * grouped["mixed_flag"] +
+        0.20 * grouped["gap_score"]
+    )
+
+    # normalize raw
+    raw_min = float(grouped["raw_score"].min())
+    raw_max = float(grouped["raw_score"].max())
+    if raw_max > raw_min:
+        grouped["raw_norm"] = (grouped["raw_score"] - raw_min) / (raw_max - raw_min)
+    else:
+        grouped["raw_norm"] = 0.5
+
+    # relative מול היום
+    grouped["relative_score"] = grouped["flights"] / max(1, grouped["flights"].max())
+
+    grouped["final_score"] = 0.7 * grouped["raw_norm"] + 0.3 * grouped["relative_score"]
+    grouped["probability"] = (8 + 77 * grouped["final_score"]).round().astype(int).clip(8, 85)
+
+    return grouped.sort_values("window").reset_index(drop=True)
+
+
+def compute_dashboard_combined_v2():
+    import pandas as pd
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    grouped = compute_window_components()
+    if grouped.empty:
+        return {
+            "updated": "--",
+            "updated_at": "--",
+            "current": {
+                "probability": 0,
+                "color": "green",
+                "label": "אין נתונים",
+                "flights": 0,
+                "arrivals": 0,
+                "departures": 0,
+                "updated_count": 0,
+                "window": "45 הדקות הקרובות",
+                "quality": "נמוכה",
+                "strong_count": 0
+            },
+            "top_windows": [],
+            "next_attention_window": None,
+            "daily": []
+        }
+
+    def _color(prob):
+        if prob < 30:
+            return "green"
+        if prob < 60:
+            return "orange"
+        return "red"
+
+    def _label(prob):
+        if prob < 30:
+            return "נמוך"
+        if prob < 60:
+            return "בינוני"
+        return "גבוה"
+
+    now = datetime.now(ZoneInfo("Asia/Jerusalem")).replace(tzinfo=None)
+    now_ts = pd.Timestamp(now)
+    updated = now.strftime("%Y-%m-%d %H:%M:%S")
+
+    current_sub = grouped[
+        (grouped["window"] >= now_ts.floor("10min")) &
+        (grouped["window"] < now_ts + pd.Timedelta(minutes=45))
+    ].copy()
+
+    if current_sub.empty:
+        current_prob = 0
+        current_flights = 0
+        current_arrivals = 0
+        current_departures = 0
+        current_updated = 0
+        current_window = "45 הדקות הקרובות"
+        current_color = "green"
+        current_label = "נמוך"
+        quality = "נמוכה"
+        strong_count = 0
+    else:
+        first_current = current_sub.sort_values(["window", "probability"], ascending=[True, False]).iloc[0]
+        start = pd.Timestamp(first_current["window"])
+        end = start + pd.Timedelta(minutes=10)
+
+        current_prob = int(first_current["probability"])
+        current_flights = int(first_current["flights"])
+        current_arrivals = int(first_current["arrivals"])
+        current_departures = int(first_current["departures"])
+        current_updated = int(first_current["updated_count"])
+        current_window = f"{start.strftime('%H:%M')}–{end.strftime('%H:%M')}"
+        current_color = _color(current_prob)
+        current_label = _label(current_prob)
+        strong_count = current_updated
+        quality = "גבוהה" if current_updated >= 1 else "בינונית"
+
+    # top windows: חלונות חזקים, עם penalty קטן על מרחק זמן
+    future = grouped[grouped["window"] >= now_ts.floor("10min")].copy()
+    future["minutes_ahead"] = ((future["window"] - now_ts).dt.total_seconds() / 60).clip(lower=0)
+
+    # מציגים רק חלונות חזקים באמת
+    future = future[future["probability"] >= 50].copy()
+
+    # ממיינים לפי זמן, לא לפי אחוז
+    future = future.sort_values(["window", "probability"], ascending=[True, False]).head(10)
+
+    top_windows = []
+
+    for _, row in future.iterrows():
+        start = pd.Timestamp(row["window"])
+        end = start + pd.Timedelta(minutes=10)
+        top_windows.append({
+            "start_ts": int(start.timestamp()),
+            "label_start_ts": int(start.timestamp()),
+            "label_end_ts": int(end.timestamp()),
+            "label": f"{start.strftime('%H:%M')}–{end.strftime('%H:%M')}",
+            "probability": int(row["probability"]),
+            "flights": int(row["flights"]),
+            "arrivals": int(row["arrivals"]),
+            "departures": int(row["departures"]),
+            "color": _color(int(row["probability"])),
+            "best10": int(row["flights"]),
+            "best15": "-",
+            "best30": "-",
+            "gap10": 0.0 if pd.isna(row["min_gap"]) else float(row["min_gap"]),
+            "strong_count": int(row["updated_count"])
+        })
+
+    # next attention: הקרוב ביותר מתוך חזקים
+    next_candidates = grouped[
+        (grouped["window"] >= now_ts.floor("10min")) &
+        (grouped["probability"] >= 40)
+    ].sort_values(["window", "probability"], ascending=[True, False])
+
+    next_attention_window = None
+    if not next_candidates.empty:
+        row = next_candidates.iloc[0]
+        start = pd.Timestamp(row["window"])
+        end = start + pd.Timedelta(minutes=10)
+        next_attention_window = {
+            "start_ts": int(start.timestamp()),
+            "label_start_ts": int(start.timestamp()),
+            "label_end_ts": int(end.timestamp()),
+            "label": f"{start.strftime('%H:%M')}–{end.strftime('%H:%M')}",
+            "probability": int(row["probability"]),
+            "flights": int(row["flights"]),
+            "arrivals": int(row["arrivals"]),
+            "departures": int(row["departures"]),
+            "color": _color(int(row["probability"])),
+            "best10": int(row["flights"]),
+            "best15": "-",
+            "best30": "-",
+            "gap10": 0.0 if pd.isna(row["min_gap"]) else float(row["min_gap"]),
+            "strong_count": int(row["updated_count"])
+        }
+
+    grouped["hour"] = grouped["window"].dt.floor("1h")
+    hourly = (
+        grouped.groupby("hour")
+          .agg(
+              probability=("probability", "max"),
+              flights=("flights", "sum")
+          )
+          .reset_index()
+          .sort_values("hour")
+    )
+
+    daily = []
+    for _, row in hourly.iterrows():
+        daily.append({
+            "hour": pd.Timestamp(row["hour"]).strftime("%H:%M"),
+            "probability": int(row["probability"]),
+            "flights": int(row["flights"]),
+            "color": _color(int(row["probability"]))
+        })
+
+    return {
+        "updated": updated,
+        "updated_at": updated,
+        "current": {
+            "probability": current_prob,
+            "color": current_color,
+            "label": current_label,
+            "flights": current_flights,
+            "arrivals": current_arrivals,
+            "departures": current_departures,
+            "updated_count": current_updated,
+            "window": current_window,
+            "quality": quality,
+            "strong_count": strong_count
+        },
+        "top_windows": top_windows,
+        "next_attention_window": next_attention_window,
+        "daily": daily
+    }
+
 def compute_dashboard_combined():
     import pandas as pd
     from datetime import datetime

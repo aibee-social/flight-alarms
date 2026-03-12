@@ -6,7 +6,7 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime
 
-from src.predictor.predictor import compute_dashboard_combined
+from src.predictor.predictor import compute_dashboard_combined_v2
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = BASE_DIR / "logs"
@@ -66,7 +66,7 @@ def shutdown_event():
 @app.get("/api/dashboard")
 def dashboard():
     try:
-        return compute_dashboard_combined()
+        return compute_dashboard_combined_v2()
     except Exception as e:
         return JSONResponse(
             status_code=200,
