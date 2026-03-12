@@ -4,30 +4,56 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import subprocess
 import sqlite3
 from pathlib import Path
+from datetime import datetime
 
 from src.predictor.predictor import compute_dashboard_combined
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-scheduler = BackgroundScheduler()
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+UPDATE_LOG = LOG_DIR / "render_update.log"
 
+scheduler = BackgroundScheduler()
 app = FastAPI()
 
 
 def run_update():
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     try:
-        subprocess.run(
+        result = subprocess.run(
             ["bash", "update_all_traffic.sh"],
             cwd=str(BASE_DIR),
-            check=False,
+            capture_output=True,
+            text=True,
+            timeout=300,
         )
+
+        with open(UPDATE_LOG, "a", encoding="utf-8") as f:
+            f.write(f"\n===== {now} =====\n")
+            f.write(f"returncode: {result.returncode}\n")
+            f.write("STDOUT:\n")
+            f.write(result.stdout or "")
+            f.write("\nSTDERR:\n")
+            f.write(result.stderr or "")
+            f.write("\n")
+
     except Exception as e:
-        print("update job failed:", e)
+        with open(UPDATE_LOG, "a", encoding="utf-8") as f:
+            f.write(f"\n===== {now} =====\n")
+            f.write(f"EXCEPTION: {e}\n")
 
 
 @app.on_event("startup")
 def startup_event():
+    run_update()
     if not scheduler.running:
-        scheduler.add_job(run_update, "interval", minutes=5, id="flight_update", replace_existing=True)
+        scheduler.add_job(
+            run_update,
+            "interval",
+            minutes=5,
+            id="flight_update",
+            replace_existing=True,
+        )
         scheduler.start()
 
 
@@ -76,16 +102,9 @@ def db_check():
     }
 
 
-@app.get("/", response_class=HTMLResponse)
-def index():
-    with open(BASE_DIR / "web" / "templates" / "index.html", "r", encoding="utf-8") as f:
-        return f.read()
-
-
-
 @app.get("/api/debug_db")
 def debug_db():
-    import sqlite3, os
+    import os
 
     db = str(BASE_DIR / "data" / "flights.db")
 
@@ -140,3 +159,16 @@ def debug_db():
             "error": str(e),
             "db_path": os.path.abspath(db)
         }
+
+
+@app.get("/api/update_log")
+def update_log():
+    if UPDATE_LOG.exists():
+        return {"log": UPDATE_LOG.read_text(encoding="utf-8")[-12000:]}
+    return {"log": "no log yet"}
+
+
+@app.get("/", response_class=HTMLResponse)
+def index():
+    with open(BASE_DIR / "web" / "templates" / "index.html", "r", encoding="utf-8") as f:
+        return f.read()
