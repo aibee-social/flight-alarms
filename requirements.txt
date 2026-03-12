@@ -35,3 +35,4 @@ urllib3==2.6.3
 uvicorn==0.39.0
 webencodings==0.5.1
 APScheduler==3.11.1
+playwright==1.52.0
