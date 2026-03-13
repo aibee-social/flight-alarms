@@ -168,6 +168,19 @@ def update_log():
     return {"log": "no log yet"}
 
 
+
+@app.get("/api/playwright_env")
+def playwright_env():
+    import os
+    from pathlib import Path
+
+    browser_path = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "")
+    return {
+        "PLAYWRIGHT_BROWSERS_PATH": browser_path,
+        "exists": Path(browser_path).exists() if browser_path else False,
+        "files": sorted([x.name for x in Path(browser_path).glob("*")])[:30] if browser_path and Path(browser_path).exists() else []
+    }
+
 @app.get("/", response_class=HTMLResponse)
 def index():
     with open(BASE_DIR / "web" / "templates" / "index.html", "r", encoding="utf-8") as f:
